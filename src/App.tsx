@@ -14,6 +14,16 @@ export default function App() {
     howToUseRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
+  const testBackendConnection = async () => {
+    try {
+      const response = await fetch("http://127.0.0.1:8000/api/status");
+      const data = await response.json();
+      alert("Python says: " + data.message); // A simple pop-up so we don't mess up your UI layout!
+    } catch (error) {
+      alert("Failed to connect to Python! Is the Uvicorn server running?");
+    }
+  };
+
   useEffect(() => {
     const timings = [
       { step: 1, time: 300 },
@@ -28,6 +38,9 @@ export default function App() {
     const timeouts = timings.map((t) =>
       setTimeout(() => setStep(t.step), t.time)
     );
+
+    // Z.E.R.O T.R.A.C.E. Backend Connection Test
+  
 
     return () => timeouts.forEach(clearTimeout);
   }, []);
@@ -127,6 +140,8 @@ export default function App() {
 >
   How to Use
 </button>
+
+<button onClick={testBackendConnection}>Test Backend Bridge</button>
                 </div>
               </div>
               <section ref={howToUseRef} className="max-w-7xl mx-auto px-8 py-24 w-full border-t border-gray-800/50">
@@ -183,7 +198,7 @@ export default function App() {
       {currentView === "recover" && <RECOVERTOOL setCurrentView={setCurrentView} />}
       {currentView === "forensic" && <FORENSIC setCurrentView={setCurrentView} />}
       {currentView === "aboutus" && <ABOUTUS setCurrentView={setCurrentView} />}
-      {currentView === "contactus" && <CONTACTUS setCurrentView={setCurrentView} />}
+      {currentView === "contactus" && <CONTACTUS setCurrentView={setCurrentView} />}    
     </>
   );
 }
