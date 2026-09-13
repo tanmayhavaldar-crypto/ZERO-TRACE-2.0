@@ -94,10 +94,10 @@ export default function ERASINGTOOL({ setCurrentView }: ErasingToolProps) {
       for (const path of selectedPaths) {
         setScanLogs((prev) => [...prev, `[WIPE] Pass 1/3: Overwriting with zeroes (0x00) on ${path}...`]);
         
-        // UPDATED: Calls the exact name of the Rust mock function without passing any arguments
-        await invoke("test_mock_file_erasure");
+        // UPDATED: Now calling the real Rust function and passing the dynamic file path
+        const result = await invoke("erase_real_file", { path: path });
         
-        setScanLogs((prev) => [...prev, `[SUCCESS] Securely wiped: ${path}`]);
+        setScanLogs((prev) => [...prev, `[SUCCESS] ${result}`]);
       }
       
       setScanLogs((prev) => [...prev, "[SUCCESS] Data permanently sanitized from core storage."]);
@@ -125,7 +125,6 @@ export default function ERASINGTOOL({ setCurrentView }: ErasingToolProps) {
         <header className="border-b border-white/5 bg-[#0a0a0c]/80 backdrop-blur-md sticky top-0 z-40">
           <nav className="flex items-center justify-between px-8 py-5 max-w-7xl w-full mx-auto">
             
-            {/* UPDATED: Clicking logo goes to Home */}
             <div 
               className="text-2xl font-black tracking-tighter cursor-pointer"
               onClick={() => setCurrentView("home")}
@@ -139,14 +138,12 @@ export default function ERASINGTOOL({ setCurrentView }: ErasingToolProps) {
                 <span className="absolute -bottom-6 left-0 w-full h-[2px] bg-red-500"></span>
               </button>
               
-              {/* UPDATED: Navigates to Recover Tool */}
               <button 
                 onClick={() => setCurrentView("recover")} 
                 className="text-gray-400 hover:text-white transition cursor-pointer"
               >
                 Recover Tool
               </button>
-              {/* UPDATED: Navigates to FORENSIC HISTORY */}
               <button 
                 onClick={() => setCurrentView("forensic")} 
                 className="text-gray-400 hover:text-white transition cursor-pointer"
@@ -182,7 +179,6 @@ export default function ERASINGTOOL({ setCurrentView }: ErasingToolProps) {
               </h2>
 
               <div className="grid grid-cols-2 gap-4">
-                {/* Replaced input refs with direct Tauri dialog handler functions */}
                 <button onClick={handleFileSelection} className="flex flex-col items-center justify-center p-8 border-2 border-dashed border-gray-700 rounded-xl hover:border-red-500/50 hover:bg-red-500/5 transition-all group cursor-pointer">
                   <svg xmlns="http://www.w3.org/2000/svg" className="h-10 w-10 text-gray-500 group-hover:text-red-400 mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
                   <span className="text-sm font-medium text-gray-300">Select Files</span>
@@ -199,7 +195,6 @@ export default function ERASINGTOOL({ setCurrentView }: ErasingToolProps) {
                   <p className="text-sm text-gray-600 italic">No targets selected.</p>
                 ) : (
                   <ul className="space-y-2">
-                    {/* Render raw string paths since native filesystem dialogs return strings, not File objects */}
                     {selectedPaths.slice(0, 50).map((path, idx) => {
                       const fileName = path.split(/[\\/]/).pop() || path;
                       return (

@@ -6,9 +6,10 @@ pub fn run() {
     // 1. THIS LINE FIXES YOUR DIALOG ERROR:
     .plugin(tauri_plugin_dialog::init())
     
-    // 2. THIS LINE REGISTERS YOUR MOCK TEST COMMAND:
+    // 2. THIS LINE REGISTERS BOTH YOUR MOCK TEST AND REAL ERASURE COMMAND:
     .invoke_handler(tauri::generate_handler![
         commands::file_eraser_cmds::test_mock_file_erasure,
+        commands::file_eraser_cmds::erase_real_file, // <-- NEW REAL COMMAND ADDED HERE
     ])
     
     // 3. THIS SETS UP YOUR LOGGING:
