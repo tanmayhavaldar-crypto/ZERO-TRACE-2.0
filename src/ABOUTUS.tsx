@@ -9,39 +9,39 @@ export default function ABOUTUS({ setCurrentView }: AboutUsProps) {
   const teamMembers = [
     { 
       name: "TANMAY", 
-      role: "Lead Frontend & Architecture", 
-      desc: "Responsible for building the React/Tauri desktop client and ensuring secure UI-to-system communication.",
+      role: "UI/UX & Integration Lead", 
+      desc: "Orchestrates the overall software architecture by linking backend processing modules with the frontend, ensuring seamless communication, data flow, and stability across the entire application.",
       color: "text-red-400"
+    },
+     { 
+      name: "KRISHNA", 
+      role: "Frontend & Deployment Lead", 
+      desc: "Spearheads the development of the React/Tauri desktop client. Manages deployment pipelines, release schedules, and ensures a secure, responsive, and intuitive user interface.",
+      color: "text-blue-400"
     },
     { 
       name: "RITHIK", 
-      role: "Core Systems Engineer", 
-      desc: "Spearheading the destructive modules, raw-storage overwrite algorithms, and secure drive erasure protocols.",
-      color: "text-purple-400"
+      role: "Hardware Wiping Specialist", 
+      desc: "Develops destructive modules and raw-storage overwrite algorithms. Ensures the application meets strict security standards for secure drive erasure and permanent hardware-level data destruction.",
+      color: "text-red-400"
+    },
+    { 
+      name: "VIDHATRI", 
+      role: "File Sanitization Specialist", 
+      desc: "Specializes in targeted data clearing. Develops algorithms for secure file deletion, metadata stripping, and precise data sanitization without compromising the surrounding file system or OS structures.",
+      color: "text-blue-400"
     },
     { 
       name: "INCHARA", 
-      role: "Backend & Reconstruction", 
-      desc: "Focused on the FastAPI bridge and artifact carving logic.",
-      color: "text-blue-400"
-    },
-    { 
-      name: "VIDHARTI", 
-      role: "Backend & Reconstruction", 
-      desc: "Focused on the FastAPI bridge and artifact carving logic.",
-      color: "text-blue-400"
-    },
-    { 
-      name: "KRISHNA", 
-      role: "Lead Frontend & Architecture", 
-      desc: "Responsible for building the React/Tauri desktop client and ensuring secure UI-to-system communication.",
+      role: "File Carving Specialist", 
+      desc: "Focuses on backend data extraction logic. Builds the robust algorithms necessary to scan raw storage, identify specific file signatures, and accurately retrieve hidden or deleted digital artifacts..",
       color: "text-red-400"
     },
     { 
       name: "AHAN", 
-      role: "Lead Frontend & Architecture", 
-      desc: "Responsible for building the React/Tauri desktop client and ensuring secure UI-to-system communication.",
-      color: "text-red-400"
+      role: "Drive Reconstruction Specialist", 
+      desc: "Handles complex storage recovery operations. Responsible for implementing algorithms that repair corrupted file systems, reassemble fragmented data structures, and logically reconstruct damaged or wiped drives.",
+      color: "text-blue-400"
     }
   ];
 

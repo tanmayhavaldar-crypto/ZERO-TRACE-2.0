@@ -35,12 +35,12 @@ export default function CONTACTUS({ setCurrentView }: ContactUsProps) {
   };
 
   const developers = [
-    { name: "TANMAY", role: "Lead Architecture & React UI", email: "[Your Email]", link: "[Your Link]" },
-    { name: "Rithik", role: "Destructive Forensics & Erasure Algorithms", email: "[Rithik's Email]", link: "[Link]" },
-    { name: "Inchara", role: "Backend Systems & FastApi Bridge", email: "[Inchara's Email]", link: "[Link]" },
-    { name: "Vidharti", role: "Artifact Carving & Data Reconstruction", email: "[Vidharti's Email]", link: "[Link]" },
-    { name: "KRISHNA", role: "Lead Architecture & React UI", email: "[ Email]", link: "[Link]" },
-    { name: "AHAN", role: "Lead Architecture & React UI", email: "[ Email]", link: "[Link]" },
+    { name: "Tanmay", role: "UI/UX & Integration Lead", email: "tanmayhavaldar@gmail.com", link: "[www.linkedin.com/in/tanmay-havaldar-a24878381]" },
+    { name: "Krishna", role: "Frontend & Deployment Lead", email: "krishnamohanvidyarthi@gmail.com", link: "[www.linkedin.com/in/krishna4356169845168451]" },
+    { name: "Rithik", role: "Hardware Wiping Specialist", email: "rajrithik401@gmail.com", link: "[linkedin.com/in/rithik-raj-b3b361387]" },
+    { name: "Vidhatri", role: "File Sanitization Specialist", email: "vidhatribsvidhatribs@gmail.com", link: "[linkedin.com/in/vidhatri-b-s-774568407]" },
+    { name: "Inchara", role: "File Carving Specialist", email: "inchara.8543@gmail.com", link: "[linkedin.com/in/inchara-n-8305b3420]" },
+    { name: "Ahan", role: "Drive Reconstruction Specialist", email: "ahankamal08@gmail.com", link: "[https://www.linkedin.com/in/ahankamal/]" },
   ];
 
   return (

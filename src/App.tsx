@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import ERASINGTOOL from "./ERASINGTOOL.tsx";
+import ERASINGTOOL from "./ERASINGTOOL.tsx"; 
 import RECOVERTOOL from "./RECOVERTOOL.tsx";
 import FORENSIC from "./FORENSIC.tsx";
 import ABOUTUS from "./ABOUTUS.tsx";
@@ -13,17 +13,65 @@ export default function App() {
   const scrollToHowToUse = () => {
     howToUseRef.current?.scrollIntoView({ behavior: "smooth" });
   };
-
+const [terminalOutput, setTerminalOutput] = useState([
+    { text: "> NullTrace architecture ready.", color: "var(--text-main)" },
+    { text: "> Awaiting target parameters...", color: "var(--text-main)" }
+  ]);
+   const terminalEndRef = useRef<HTMLDivElement>(null);
+  const words = ["RESTORATION", "EXTRACTION", "EXCAVATION", "RECOVERY"];
+  const [wordIndex, setWordIndex] = useState(0);
+  const [animationStyle, setAnimationStyle] = useState({
+    opacity: 1,
+    transform: "translateY(0px)",
+    transition: "opacity 0.4s ease, transform 0.4s ease",
+  });
+  //FIRST PAGE TEXT TRANSITION
+  useEffect(() => {
+    terminalEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [terminalOutput]);
+//  backend connection test
   const testBackendConnection = async () => {
     try {
-      const response = await fetch("http://127.0.0.1:8000/api/status");
-      const data = await response.json();
-      alert("Python says: " + data.message); // A simple pop-up so we don't mess up your UI layout!
+      // This fires a secure message across the Tauri IPC bridge directly to Rust
+      const response = await invoke("test_rust_bridge");
+      alert("Backend says: " + response); 
     } catch (error) {
-      alert("Failed to connect to Python! Is the Uvicorn server running?");
+      alert("Bridge failed! Error: " + error);
     }
   };
+  //STARTING OF PAGE ANIMATION
+  useEffect(() => {
+    if (currentView !== "home") return; // Only run animation on home screen
 
+    const intervalId = setInterval(() => {
+      setAnimationStyle({
+        opacity: 0,
+        transform: "translateY(-15px)",
+        transition: "opacity 0.4s ease, transform 0.4s ease",
+      });
+
+      setTimeout(() => {
+        setWordIndex((prev) => (prev + 1) % words.length);
+        
+        setAnimationStyle({
+          opacity: 0,
+          transform: "translateY(15px)",
+          transition: "none",
+        });
+
+        setTimeout(() => {
+          setAnimationStyle({
+            opacity: 1,
+            transform: "translateY(0px)",
+            transition: "opacity 0.4s ease, transform 0.4s ease",
+          });
+        }, 50);
+      }, 400);
+    }, 2500);
+
+    return () => clearInterval(intervalId);
+  }, [currentView, words.length]);
+  
   useEffect(() => {
     const timings = [
       { step: 1, time: 300 },
@@ -50,9 +98,9 @@ export default function App() {
 
   return (
     <>
-      {/* =========================================
-          SPLASH SCREEN / INTRO LAYER (Z-50)
-          ========================================= */}
+      {
+      //SPLASH SCREEN / INTRO LAYER (Z-50)
+      }
       {showSplash && (
         <div
           className={`fixed inset-0 z-50 flex flex-col items-center justify-center bg-[#0a0a0c] transition-opacity duration-1000 ease-in-out ${
@@ -81,9 +129,9 @@ export default function App() {
         </div>
       )}
 
-      {/* =========================================
-          HOME VIEW (Only renders if currentView === 'home')
-          ========================================= */}
+      {
+        // HOME VIEW (Only renders if currentView === 'home')
+          }
       {currentView === "home" && (
         <div className="min-h-screen bg-[#0a0a0c] text-white font-sans relative overflow-x-hidden selection:bg-red-500/30 flex flex-col">
           
@@ -107,7 +155,7 @@ export default function App() {
               >
                 ZERO TRACE<span className="text-red-500">.</span>
               </div>
-              
+              {/* ALL NAV BAR BUTTONS */}
               <div className="hidden md:flex items-center space-x-8 text-sm text-gray-300 font-medium">
                 <button onClick={() => setCurrentView("erasing")} className="hover:text-white transition cursor-pointer">Erasing Tool</button>
                 <button onClick={() => setCurrentView("recover")} className="hover:text-white transition cursor-pointer">Recover Tool</button>
@@ -124,24 +172,27 @@ export default function App() {
                 </button>
               </div>
             </nav>
-
+              {/* MAIN CONTENT */}
             <main className="flex-1 flex flex-col justify-center max-w-7xl mx-auto px-8 py-12 w-full">
-              <div className="max-w-3xl">
-                <h1 className="text-5xl md:text-7xl font-semibold leading-[1.1] tracking-tight mb-8 drop-shadow-lg">
-                  Your Digital Fortress Provides Comprehensive Cybersecurity Protection
-                </h1>
-                <p className="text-gray-400 text-lg md:text-xl max-w-2xl mb-10 font-mono text-sm leading-relaxed drop-shadow-md">
-                  Ensure the utmost security for your digital presence with our state-of-the-art forensic platform, offering comprehensive hardware-level protection against the ever-growing threats in cyberspace.
-                </p>
-                <div className="flex flex-wrap gap-4">
+                <div className="pt-[50px] pb-[110px] font-['Space_Mono'] font-bold">
+              <h1 className="text-[clamp(3rem,7vw,6.5rem)] leading-[1.1] m-0 uppercase text-white">
+                THE NEW<br />
+                STANDARD IN<br />
+                DATA{' '}
+                <span className="text-red-500 text-[var(--coral)] inline-block" style={animationStyle}>
+                  {words[wordIndex]}
+                </span>
+              </h1>
+              {/* SCROLL DOWN LAYER OF HOMEPAGE */}
+                <div className="flex flex-wrap gap-4 py-7">
                   <button 
-  onClick={scrollToHowToUse}
-  className="px-8 py-3.5 bg-white text-black font-semibold rounded transition cursor-pointer shadow-[0_0_20px_rgba(255,255,255,0.15)] delay-150 duration-300 ease-in-out hover:-translate-y-1 hover:scale-110 hover:bg-orange-500"
->
-  How to Use
-</button>
+                    onClick={scrollToHowToUse}
+                    className="px-8 py-3.5 bg-white text-black font-semibold rounded transition cursor-pointer shadow-[0_0_20px_rgba(255,255,255,0.15)] delay-150 duration-300 ease-in-out hover:-translate-y-1 hover:scale-110 hover:bg-orange-500"
+                  >
+                    How to Use
+                  </button>
 
-<button onClick={testBackendConnection}>Test Backend Bridge</button>
+                  <button onClick={testBackendConnection}>Test Backend Bridge</button>
                 </div>
               </div>
               <section ref={howToUseRef} className="max-w-7xl mx-auto px-8 py-24 w-full border-t border-gray-800/50">
@@ -191,9 +242,9 @@ export default function App() {
         </div>
       )}
 
-      {/* =========================================
-          TOOL VIEWS (Only one renders at a time)
-          ========================================= */}
+      {
+          // TOOL VIEWS (Only one renders at a time)
+          }
       {currentView === "erasing" && <ERASINGTOOL setCurrentView={setCurrentView} />}
       {currentView === "recover" && <RECOVERTOOL setCurrentView={setCurrentView} />}
       {currentView === "forensic" && <FORENSIC setCurrentView={setCurrentView} />}
