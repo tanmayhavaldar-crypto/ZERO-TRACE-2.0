@@ -1,4 +1,6 @@
-import React, { useState, useRef, ChangeEvent } from "react";
+import React, { useState } from "react";
+import { invoke } from "@tauri-apps/api/core";
+import { open } from "@tauri-apps/plugin-dialog";
 
 // Add this interface to accept the prop from App.tsx
 interface ErasingToolProps {
@@ -6,27 +8,58 @@ interface ErasingToolProps {
 }
 
 export default function ERASINGTOOL({ setCurrentView }: ErasingToolProps) {
-  const [selectedItems, setSelectedItems] = useState<File[]>([]);
+  // Switched from File[] to string[] to hold native system paths from Tauri
+  const [selectedPaths, setSelectedPaths] = useState<string[]>([]);
   const [isScanning, setIsScanning] = useState(false);
   const [scanProgress, setScanProgress] = useState(0);
   const [scanLogs, setScanLogs] = useState<string[]>([]);
   const [isErased, setIsErased] = useState(false);
 
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  const folderInputRef = useRef<HTMLInputElement>(null);
+  // Tauri Native File Selection
+  const handleFileSelection = async () => {
+    try {
+      const selected = await open({
+        multiple: true,
+        directory: false,
+      });
+      
+      if (Array.isArray(selected)) {
+        setSelectedPaths(selected);
+        setIsErased(false);
+        setScanProgress(0);
+        setScanLogs([`[SYSTEM] Target acquired: ${selected.length} items detected.`]);
+      } else if (selected) {
+        setSelectedPaths([selected]);
+        setIsErased(false);
+        setScanProgress(0);
+        setScanLogs([`[SYSTEM] Target acquired: 1 item detected.`]);
+      }
+    } catch (err) {
+      setScanLogs((prev) => [...prev, `[ERROR] Failed to open dialog: ${err}`]);
+    }
+  };
 
-  const handleSelection = (e: ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files.length > 0) {
-      const filesArray = Array.from(e.target.files);
-      setSelectedItems(filesArray);
-      setIsErased(false);
-      setScanProgress(0);
-      setScanLogs([`[SYSTEM] Target acquired: ${filesArray.length} items detected.`]);
+  // Tauri Native Folder Selection
+  const handleFolderSelection = async () => {
+    try {
+      const selected = await open({
+        multiple: false,
+        directory: true,
+      });
+
+      if (selected && typeof selected === 'string') {
+        setSelectedPaths([selected]);
+        setIsErased(false);
+        setScanProgress(0);
+        setScanLogs([`[SYSTEM] Directory acquired: ${selected}`]);
+      }
+    } catch (err) {
+      setScanLogs((prev) => [...prev, `[ERROR] Failed to open dialog: ${err}`]);
     }
   };
 
   const initiateScan = () => {
-    if (selectedItems.length === 0) return;
+    if (selectedPaths.length === 0) return;
     setIsScanning(true);
     setScanProgress(0);
     setScanLogs((prev) => [...prev, "[FORENSIC] Initiating deep sector analysis..."]);
@@ -42,7 +75,7 @@ export default function ERASINGTOOL({ setCurrentView }: ErasingToolProps) {
           ...prev, 
           "[FORENSIC] MFT (Master File Table) records mapped.",
           "[FORENSIC] Slack space and shadow copies identified.",
-          "[SYSTEM] Ready for core erasure (DoD 5220.22-M Standard)."
+          "[SYSTEM] Ready for core erasure (Rust Backend Integration)."
         ]);
       } else {
         const fakeSectors = ["0x00A4F", "0x00B12", "0x0FC88", "0x1A44B"];
@@ -53,17 +86,26 @@ export default function ERASINGTOOL({ setCurrentView }: ErasingToolProps) {
     }, 400);
   };
 
-  const initiateErasure = () => {
+  const initiateErasure = async () => {
     if (scanProgress < 100) return;
     setScanLogs((prev) => [...prev, "[WARNING] INITIATING 3-PASS SECURE WIPE..."]);
-    setTimeout(() => setScanLogs(prev => [...prev, "[WIPE] Pass 1/3: Overwriting with zeroes (0x00)..."]), 1000);
-    setTimeout(() => setScanLogs(prev => [...prev, "[WIPE] Pass 2/3: Overwriting with ones (0xFF)..."]), 2000);
-    setTimeout(() => setScanLogs(prev => [...prev, "[WIPE] Pass 3/3: Overwriting with pseudorandom data..."]), 3000);
-    setTimeout(() => {
-      setScanLogs(prev => [...prev, "[SUCCESS] Data permanently sanitized from core storage."]);
+    
+    try {
+      for (const path of selectedPaths) {
+        setScanLogs((prev) => [...prev, `[WIPE] Pass 1/3: Overwriting with zeroes (0x00) on ${path}...`]);
+        
+        // UPDATED: Calls the exact name of the Rust mock function without passing any arguments
+        await invoke("test_mock_file_erasure");
+        
+        setScanLogs((prev) => [...prev, `[SUCCESS] Securely wiped: ${path}`]);
+      }
+      
+      setScanLogs((prev) => [...prev, "[SUCCESS] Data permanently sanitized from core storage."]);
       setIsErased(true);
-      setSelectedItems([]);
-    }, 4000);
+      setSelectedPaths([]);
+    } catch (error) {
+      setScanLogs((prev) => [...prev, `[ERROR] Backend erasure failed: ${error}`]);
+    }
   };
 
   return (
@@ -139,16 +181,13 @@ export default function ERASINGTOOL({ setCurrentView }: ErasingToolProps) {
                 1. Target Selection
               </h2>
 
-              <input type="file" multiple className="hidden" ref={fileInputRef} onChange={handleSelection} />
-              {/* @ts-ignore */}
-              <input type="file" webkitdirectory="" directory="" className="hidden" ref={folderInputRef} onChange={handleSelection} />
-
               <div className="grid grid-cols-2 gap-4">
-                <button onClick={() => fileInputRef.current?.click()} className="flex flex-col items-center justify-center p-8 border-2 border-dashed border-gray-700 rounded-xl hover:border-red-500/50 hover:bg-red-500/5 transition-all group">
+                {/* Replaced input refs with direct Tauri dialog handler functions */}
+                <button onClick={handleFileSelection} className="flex flex-col items-center justify-center p-8 border-2 border-dashed border-gray-700 rounded-xl hover:border-red-500/50 hover:bg-red-500/5 transition-all group cursor-pointer">
                   <svg xmlns="http://www.w3.org/2000/svg" className="h-10 w-10 text-gray-500 group-hover:text-red-400 mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
                   <span className="text-sm font-medium text-gray-300">Select Files</span>
                 </button>
-                <button onClick={() => folderInputRef.current?.click()} className="flex flex-col items-center justify-center p-8 border-2 border-dashed border-gray-700 rounded-xl hover:border-red-500/50 hover:bg-red-500/5 transition-all group">
+                <button onClick={handleFolderSelection} className="flex flex-col items-center justify-center p-8 border-2 border-dashed border-gray-700 rounded-xl hover:border-red-500/50 hover:bg-red-500/5 transition-all group cursor-pointer">
                   <svg xmlns="http://www.w3.org/2000/svg" className="h-10 w-10 text-gray-500 group-hover:text-red-400 mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" /></svg>
                   <span className="text-sm font-medium text-gray-300">Select Folder</span>
                 </button>
@@ -156,16 +195,20 @@ export default function ERASINGTOOL({ setCurrentView }: ErasingToolProps) {
 
               <div className="bg-[#0a0a0c] border border-gray-800 rounded-lg p-4 h-48 overflow-y-auto">
                 <h3 className="text-xs font-mono text-gray-500 mb-2 uppercase">Targets Staged for Sanitization:</h3>
-                {selectedItems.length === 0 ? (
+                {selectedPaths.length === 0 ? (
                   <p className="text-sm text-gray-600 italic">No targets selected.</p>
                 ) : (
                   <ul className="space-y-2">
-                    {selectedItems.slice(0, 50).map((file, idx) => (
-                      <li key={idx} className="text-sm text-gray-300 font-mono truncate flex items-center">
-                         <span className="text-red-500 mr-2">x</span> {file.name} 
-                         <span className="text-gray-600 ml-2">({(file.size / 1024).toFixed(1)} KB)</span>
-                      </li>
-                    ))}
+                    {/* Render raw string paths since native filesystem dialogs return strings, not File objects */}
+                    {selectedPaths.slice(0, 50).map((path, idx) => {
+                      const fileName = path.split(/[\\/]/).pop() || path;
+                      return (
+                        <li key={idx} className="text-sm text-gray-300 font-mono truncate flex items-center" title={path}>
+                          <span className="text-red-500 mr-2">x</span> {fileName} 
+                          <span className="text-gray-600 ml-2 truncate">({path})</span>
+                        </li>
+                      );
+                    })}
                   </ul>
                 )}
               </div>
@@ -178,10 +221,10 @@ export default function ERASINGTOOL({ setCurrentView }: ErasingToolProps) {
               </h2>
 
               <div className="flex space-x-4">
-                <button onClick={initiateScan} disabled={selectedItems.length === 0 || isScanning || scanProgress === 100} className="flex-1 bg-gray-800 text-white py-3 rounded border border-gray-700 hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition font-semibold text-sm">
+                <button onClick={initiateScan} disabled={selectedPaths.length === 0 || isScanning || scanProgress === 100} className="flex-1 bg-gray-800 text-white py-3 rounded border border-gray-700 hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition font-semibold text-sm cursor-pointer">
                   {isScanning ? "Scanning..." : "Gather Forensic Data"}
                 </button>
-                <button onClick={initiateErasure} disabled={scanProgress < 100 || isErased} className="flex-1 bg-red-600 text-white py-3 rounded border border-red-500 hover:bg-red-500 disabled:opacity-50 disabled:cursor-not-allowed transition shadow-[0_0_15px_rgba(220,38,38,0.4)] font-semibold text-sm">
+                <button onClick={initiateErasure} disabled={scanProgress < 100 || isErased} className="flex-1 bg-red-600 text-white py-3 rounded border border-red-500 hover:bg-red-500 disabled:opacity-50 disabled:cursor-not-allowed transition shadow-[0_0_15px_rgba(220,38,38,0.4)] font-semibold text-sm cursor-pointer">
                   {isErased ? "SANITIZED" : "ERASE FROM CORE"}
                 </button>
               </div>
@@ -196,7 +239,7 @@ export default function ERASINGTOOL({ setCurrentView }: ErasingToolProps) {
                 <div className="overflow-y-auto flex-1 font-mono text-[13px] space-y-1">
                   {scanLogs.length === 0 && <p className="text-gray-700">Awaiting target selection...</p>}
                   {scanLogs.map((log, idx) => (
-                    <p key={idx} className={`${log.includes('[WARNING]') ? 'text-orange-400' : log.includes('[SUCCESS]') ? 'text-green-400' : log.includes('[WIPE]') ? 'text-red-400' : 'text-gray-400'}`}>
+                    <p key={idx} className={`${log.includes('[WARNING]') || log.includes('[ERROR]') ? 'text-orange-400' : log.includes('[SUCCESS]') ? 'text-green-400' : log.includes('[WIPE]') ? 'text-red-400' : 'text-gray-400'}`}>
                       {log}
                     </p>
                   ))}

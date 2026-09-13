@@ -4,6 +4,7 @@ import RECOVERTOOL from "./RECOVERTOOL.tsx";
 import FORENSIC from "./FORENSIC.tsx";
 import ABOUTUS from "./ABOUTUS.tsx";
 import CONTACTUS from "./CONTACTUS.tsx";
+import { invoke } from "@tauri-apps/api/core";
 
 
 export default function App() {

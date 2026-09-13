@@ -26,3 +26,7 @@ dist-ssr
 # Python Backend
 backend/venv/
 __pycache__/
+# Rust / Tauri
+target/
+src-tauri/target/
+**/*.rs.bk
